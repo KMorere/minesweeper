@@ -32,11 +32,6 @@ public class Minesweeper {
 	private static boolean isGameOver = false;
 	private static int cells = col * row - bombsAmount;
 	
-	/// TODO :
-	/// When the user discovers an empty space,
-	/// Discover all the neigbouring cells,
-	/// Until there is no empty left.
-	
 	public static void main(String[] args) {
 		tryInput();
 	}
@@ -62,7 +57,6 @@ public class Minesweeper {
 		if (cells == 0)
 			System.out.println("Finished.");
 		displayGrid();
-		System.out.println(empty);
 	}
 	
 	/**
@@ -76,9 +70,9 @@ public class Minesweeper {
 			switch (grid[yPos][xPos]) {
 			case EMPTY:
 				if (getCount(input) == 0) {
-					//chainDiscover(input);
+					chainDiscover(input);
 				}
-				cells--;
+				//cells--;
 				break;
 			case BOMB:
 				isGameOver = true;
@@ -92,20 +86,20 @@ public class Minesweeper {
 			tryInput();
 	}
 	
-	/// TODO:
-	/// When the user reveals a safe cell, discover all the connected safe cells.
-	/// Check all the neighbouring cells around the current coordinates,
-	/// A new cell to check must be empty.
+	/**
+	 * Reveal all the empty tiles in a chain.
+	 */
 	private static ArrayList<String> empty = new ArrayList<String>();
 	private static void chainDiscover(String input) {
-		int y = splitCoordinates(input)[0], x = splitCoordinates(input)[1];
+		int y = splitCoordinates(input)[0]-1, x = splitCoordinates(input)[1]-1;
 		
 		for (int i = 1; i <= 9; i++) {
 			if (isValidCoordinates(y, x)) {
-				if (grid[y][x] == CellType.EMPTY && !empty.contains(input)) {
-					empty.add(input);
-					userGrid[y][x] = ""+getCount(""+y + " "+x);
-					chainDiscover(""+y + " "+x);
+				if (userGrid[y][x] == " " && !empty.contains(""+y + " "+x)) {
+					empty.add(""+y + " "+x);
+					userGrid[y][x] = ""+getCount(""+(y+1) + " "+(x+1));
+					chainDiscover(""+(y+1) + " "+(x+1));
+					cells--;
 				}
 			}
 			
@@ -125,8 +119,7 @@ public class Minesweeper {
 	 */
 	private static int getCount(String pos) {
 		int count = 0;
-		int y = splitCoordinates(pos)[0], x = splitCoordinates(pos)[1];
-		
+		int y = splitCoordinates(pos)[0]-1, x = splitCoordinates(pos)[1]-1;
 		
 		for (int i = 1; i <= 9; i++) {
 			if (isValidCoordinates(y, x)) { // Out of range verification.
@@ -146,7 +139,7 @@ public class Minesweeper {
 		y = splitCoordinates(pos)[0];
 		x = splitCoordinates(pos)[1];
 		if (isValidCoordinates(y, x))
-			userGrid[splitCoordinates(pos)[0]][splitCoordinates(pos)[1]] = ""+count;
+			userGrid[y][x] = ""+count;
 		return count;
 	}
 	
