@@ -161,14 +161,29 @@ public class Minesweeper {
 	 * Displays the grid with the data of each cell.
 	 */
 	private static void displayGrid() {
-		for (int y = 0; y < col; y++) {
-			for (int x = 0; x < row; x++) {
+		for (int y = -1; y < col; y++) {
+			if (y >= 0) {
 				System.out.print("[");
-				if (isGameOver) // Display if game is finished.
-					System.out.print(grid[y][x].getValue());
-				else
-					System.out.print(userGrid[y][x]);
+				System.out.printf("%2s", (y+1));
 				System.out.print("] ");
+			}
+			else if (y < 0) {
+				System.out.print("     ");
+			}
+			for (int x = 0; x < row; x++) {
+				if (y >= 0) {
+					System.out.print("[");
+					if (isGameOver) // Display if game is finished.
+						System.out.print(grid[y][x].getValue());
+					else
+						System.out.print(userGrid[y][x]);
+					System.out.print("] ");
+				}
+				else {
+					System.out.print("[");
+					System.out.print((x+1));
+					System.out.print("] ");
+				}
 			}
 			System.out.println();
 		}
