@@ -3,6 +3,7 @@ package def;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Minesweeper {
 	private enum CellType {
@@ -31,6 +32,11 @@ public class Minesweeper {
 	private static boolean isGameOver = false;
 	private static int cells = col * row - bombsAmount;
 	
+	/// TODO :
+	/// When the user discovers an empty space,
+	/// Discover all the neigbouring cells,
+	/// Until there is no empty left.
+	
 	public static void main(String[] args) {
 		tryInput();
 	}
@@ -53,24 +59,30 @@ public class Minesweeper {
 				System.out.println("Please type valid numbers.");
 			}
 		}
+		if (cells == 0)
+			System.out.println("Finished.");
+		displayGrid();
+		System.out.println(empty);
 	}
 	
+	/**
+	 * Select a cell in the grid and see if there's a bomb or not.
+	 * @param input Input of the user.
+	 */
 	private static void guess(String input) {
-		String[] newPos = input.split(" ");
-		int xPos = Integer.parseInt(newPos[1])-1;
-		int yPos = Integer.parseInt(newPos[0])-1;
+		int yPos = splitCoordinates(input)[0], xPos = splitCoordinates(input)[1];
 		
-		if ((yPos >= 0 && yPos < col) && (xPos >= 0 && xPos < row)) {
+		if (isValidCoordinates(yPos, xPos)) {
 			switch (grid[yPos][xPos]) {
 			case EMPTY:
-				getCount(input);
+				if (getCount(input) == 0) {
+					//chainDiscover(input);
+				}
 				cells--;
 				break;
 			case BOMB:
 				isGameOver = true;
 				cells = 0;
-				break;
-			case HIT:
 				break;
 			default:
 				break;
@@ -80,6 +92,32 @@ public class Minesweeper {
 			tryInput();
 	}
 	
+	/// TODO:
+	/// When the user reveals a safe cell, discover all the connected safe cells.
+	/// Check all the neighbouring cells around the current coordinates,
+	/// A new cell to check must be empty.
+	private static ArrayList<String> empty = new ArrayList<String>();
+	private static void chainDiscover(String input) {
+		int y = splitCoordinates(input)[0], x = splitCoordinates(input)[1];
+		
+		for (int i = 1; i <= 9; i++) {
+			if (isValidCoordinates(y, x)) {
+				if (grid[y][x] == CellType.EMPTY && !empty.contains(input)) {
+					empty.add(input);
+					userGrid[y][x] = ""+getCount(""+y + " "+x);
+					chainDiscover(""+y + " "+x);
+				}
+			}
+			
+			if (i > 0 && i%3 == 0) {
+				y++;
+				x -= 3;
+			}
+
+			x++;
+		}
+	}
+	
 	/**
 	 * Get the number of bombs around the user's input.
 	 * @param pos The user's coordinates.
@@ -87,11 +125,11 @@ public class Minesweeper {
 	 */
 	private static int getCount(String pos) {
 		int count = 0;
-		String[] newPos = pos.split(" ");
-		int x = Integer.parseInt(newPos[1])-1, y = Integer.parseInt(newPos[0])-1;
+		int y = splitCoordinates(pos)[0], x = splitCoordinates(pos)[1];
+		
 		
 		for (int i = 1; i <= 9; i++) {
-			if ((y >= 0 && y < col) && (x >= 0 && x < row)) { // Out of range verification.
+			if (isValidCoordinates(y, x)) { // Out of range verification.
 				if (grid[y][x] == CellType.BOMB) { // If there's a bomb increase the count.
 					count++;
 				}
@@ -104,9 +142,26 @@ public class Minesweeper {
 
 			x++;
 		}
-		
-		userGrid[Integer.parseInt(newPos[0])][Integer.parseInt(newPos[1])] = ""+count;
+
+		y = splitCoordinates(pos)[0];
+		x = splitCoordinates(pos)[1];
+		if (isValidCoordinates(y, x))
+			userGrid[splitCoordinates(pos)[0]][splitCoordinates(pos)[1]] = ""+count;
 		return count;
+	}
+	
+	/**
+	 * Split the given coordinates in two.
+	 * @param input
+	 * @return
+	 */
+	private static int[] splitCoordinates(String input) {
+		String[] newPos = input.split(" ");
+		return new int[] {Integer.parseInt(newPos[0])-1, Integer.parseInt(newPos[1])-1};
+	}
+	
+	private static boolean isValidCoordinates(int y, int x) {
+		return (y >= 0 && y < col) && (x >= 0 && x < row);
 	}
 	
 	/**
